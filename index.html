@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#12304a">
+  <meta name="description" content="Captura de investigación clínica para el proyecto de inclisiran después de SCA e ICP">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <title>INCLISIRAN | Registro clínico</title>
+</head>
+<body>
+<header class="topbar">
+  <div class="brandmark">I</div>
+  <div><div class="eyebrow">REGISTRO DE INVESTIGACIÓN</div><h1>INCLISIRAN · SCA / ICP</h1></div>
+  <span id="networkBadge" class="status">Comprobando conexión…</span>
+</header>
+<main>
+  <section class="hero">
+    <div><p class="eyebrow">ESTUDIO CLÍNICO</p><h2>Captura de pacientes</h2>
+    <p class="muted">Versión inicial · datos se guardan en este dispositivo</p></div>
+    <div class="hero-actions"><button id="exportCsv" class="button secondary">Exportar pacientes CSV</button><button id="exportLesionsCsv" class="button secondary">Exportar lesiones CSV</button><button id="exportJson" class="button secondary">Respaldo JSON</button></div>
+  </section>
+  <div class="notice"><strong>Importante:</strong> prototipo de desarrollo. No introducir nombres, CURP, teléfonos, números de expediente ni otros identificadores directos. Aún no está conectada a una base compartida y no debe usarse con datos reales hasta completar seguridad, aprobación institucional y sincronización.</div>
+  <nav class="tabs" aria-label="Secciones">
+    <button class="tab active" data-tab="form">Nuevo paciente</button>
+    <button class="tab" data-tab="records">Pacientes guardados <span id="recordCount" class="count">0</span></button>
+    <button class="tab" data-tab="about">Estado y guía</button>
+  </nav>
+  <section id="formPanel" class="panel">
+    <form id="patientForm">
+      <div class="section-heading"><span class="step">01</span><div><h3>Registro y características basales</h3><p>Usa un folio codificado, no identificable.</p></div></div>
+      <div class="grid">
+        <label>Folio del estudio *<input name="study_id" required maxlength="40" placeholder="Ej. INC-0001" autocomplete="off"></label>
+        <label>Fecha de ingreso<input name="admission_date" type="date"></label>
+        <label>Edad (años)<input name="age" type="number" min="18" max="120"></label>
+        <label>Sexo
+          <select name="sex"><option value="">Seleccionar</option><option value="F">Femenino</option><option value="M">Masculino</option><option value="Otro/no registrado">Otro/no registrado</option></select>
+        </label>
+        <label>Tipo de SCA
+          <select name="acs_type"><option value="">Seleccionar</option><option value="IAMCEST">IAM con elevación del ST</option><option value="IAMSEST">IAM sin elevación del ST</option><option value="Angina inestable">Angina inestable</option></select>
+        </label>
+        <label>Fecha de ICP<input name="pci_date" type="date"></label>
+        <label>Grupo de tratamiento *
+          <select name="treatment_group" required><option value="">Seleccionar</option><option value="Inclisiran temprano + tratamiento habitual">Inclisiran temprano + tratamiento habitual</option><option value="Tratamiento habitual">Tratamiento habitual</option></select>
+        </label>
+        <label>Fecha de primera dosis de inclisiran<input name="inclisiran_date" type="date"></label>
+      </div>
+      <div class="section-heading"><span class="step">02</span><div><h3>Antecedentes y tratamiento</h3><p>Marca lo documentado en expediente.</p></div></div>
+      <div class="check-grid">
+        <label class="check"><input type="checkbox" name="diabetes"> Diabetes mellitus</label>
+        <label class="check"><input type="checkbox" name="hypertension"> Hipertensión arterial</label>
+        <label class="check"><input type="checkbox" name="dyslipidemia"> Dislipidemia</label>
+        <label class="check"><input type="checkbox" name="smoking"> Tabaquismo actual</label>
+        <label class="check"><input type="checkbox" name="prior_ascvd"> Enfermedad aterosclerótica previa</label>
+        <label class="check"><input type="checkbox" name="ckd"> Enfermedad renal crónica</label>
+      </div>
+      <div class="grid">
+        <label>Estatina al alta
+          <select name="statin"><option value="">Seleccionar</option><option value="Atorvastatina alta intensidad">Atorvastatina alta intensidad</option><option value="Rosuvastatina alta intensidad">Rosuvastatina alta intensidad</option><option value="Otra">Otra</option><option value="Ninguna">Ninguna</option></select>
+        </label>
+        <label>Ezetimiba al alta
+          <select name="ezetimibe"><option value="">Seleccionar</option><option value="Sí">Sí</option><option value="No">No</option></select>
+        </label>
+      </div>
+      <div class="section-heading"><span class="step">03</span><div><h3>Perfil lipídico basal</h3><p>Introduce valores en mg/dL.</p></div></div>
+      <div class="grid">
+        <label>LDL-C basal (mg/dL)<input name="ldl_baseline" type="number" min="0" max="1000" step="0.1"></label>
+        <label>Colesterol total (mg/dL)<input name="total_cholesterol" type="number" min="0" max="1500" step="0.1"></label>
+        <label>HDL-C (mg/dL)<input name="hdl" type="number" min="0" max="500" step="0.1"></label>
+        <label>Triglicéridos (mg/dL)<input name="triglycerides" type="number" min="0" max="10000" step="0.1"></label>
+      </div>
+      <div class="section-heading"><span class="step">04</span><div><h3>Cateterismo y lesiones coronarias</h3><p>Registra cada lesión por separado. Puedes añadir varias lesiones por paciente. Las mediciones OCT deben seguir un manual de adquisición y lectura predefinido.</p></div></div>
+      <div class="notice"><strong>Regla de captura:</strong> identifica la lesión culpable del SCA y registra las lesiones intermedias no culpables como lesiones independientes. Captura la OCT por lesión solo si se realizó como parte de la atención clínica o bajo un protocolo aprobado. Usa “No evaluable” o “Indeterminado” cuando corresponda; no asumas que la ausencia de un dato equivale a “No”.</div>
+      <div id="lesionsContainer" class="lesions-container"></div>
+      <button type="button" id="addLesion" class="button secondary">+ Añadir lesión coronaria</button>
+      <div class="section-heading"><span class="step">05</span><div><h3>Seguimiento</h3><p>Se puede completar o actualizar después de guardar el paciente.</p></div></div>
+      <div class="grid">
+        <label>LDL-C al alta<input name="ldl_discharge" type="number" min="0" max="1000" step="0.1"></label>
+        <label>LDL-C a 1 mes<input name="ldl_m1" type="number" min="0" max="1000" step="0.1"></label>
+        <label>LDL-C a 3 meses<input name="ldl_m3" type="number" min="0" max="1000" step="0.1"></label>
+        <label>LDL-C a 6 meses<input name="ldl_m6" type="number" min="0" max="1000" step="0.1"></label>
+        <label>LDL-C a 12 meses<input name="ldl_m12" type="number" min="0" max="1000" step="0.1"></label>
+        <label>Adherencia documentada
+          <select name="adherence"><option value="">Seleccionar</option><option value="Adecuada">Adecuada</option><option value="Parcial">Parcial</option><option value="Baja">Baja</option><option value="No evaluada">No evaluada</option></select>
+        </label>
+      </div>
+      <div class="section-heading"><span class="step">06</span><div><h3>OCT complementaria, ecocardiograma y eventos</h3><p>Campos esenciales para registrar presencia y datos iniciales.</p></div></div>
+      <div class="grid">
+        <label>OCT realizada
+          <select name="oct_done"><option value="">Seleccionar</option><option value="Sí">Sí</option><option value="No">No</option></select>
+        </label>
+        <label>Fecha de OCT<input name="oct_date" type="date"></label>
+        <label>Espesor de grasa epicárdica basal (mm)<input name="eat_baseline_mm" type="number" min="0" max="100" step="0.1"></label>
+        <label>Espesor de grasa epicárdica seguimiento (mm)<input name="eat_followup_mm" type="number" min="0" max="100" step="0.1"></label>
+        <label>Evento cardiovascular durante seguimiento
+          <select name="cv_event"><option value="">Seleccionar</option><option value="No documentado">No documentado</option><option value="No">No</option><option value="Sí">Sí</option></select>
+        </label>
+        <label>Tipo de evento
+          <select name="event_type"><option value="">Seleccionar</option><option value="Reinfarto">Reinfarto</option><option value="Revascularización">Revascularización</option><option value="Trombosis del stent">Trombosis del stent</option><option value="Hospitalización cardiovascular">Hospitalización cardiovascular</option><option value="Muerte">Muerte</option><option value="Sangrado">Sangrado</option><option value="Otro">Otro</option></select>
+        </label>
+      </div>
+      <label>Notas de investigación (sin identificadores directos)<textarea name="notes" rows="3" maxlength="1000" placeholder="Observaciones relevantes…"></textarea></label>
+      <div class="form-footer"><p class="muted small">Los campos con * son obligatorios. Los cambios se guardan localmente en este navegador.</p><div class="hero-actions"><button type="reset" class="button secondary">Limpiar</button><button type="submit" class="button primary">Guardar paciente</button></div></div>
+      <p id="formMessage" class="message" role="status"></p>
+    </form>
+  </section>
+  <section id="recordsPanel" class="panel hidden">
+    <div class="section-heading"><div><h3>Pacientes guardados en este dispositivo</h3><p>Los registros locales no se comparten automáticamente con otros médicos.</p></div></div>
+    <div class="toolbar"><input id="searchRecords" placeholder="Buscar por folio…" aria-label="Buscar por folio"><button id="importJson" class="button secondary">Importar respaldo JSON</button><input id="jsonFile" type="file" accept="application/json,.json" hidden></div>
+    <div id="recordsList" class="records-list"></div>
+  </section>
+  <section id="aboutPanel" class="panel hidden">
+    <h3>Estado de la aplicación</h3>
+    <div class="status-grid">
+      <div class="status-card"><span>Conexión</span><strong id="connectionText">—</strong></div>
+      <div class="status-card"><span>Almacenamiento</span><strong>Local en navegador</strong></div>
+      <div class="status-card"><span>Sincronización central</span><strong>Pendiente de configurar</strong></div>
+      <div class="status-card"><span>Registros locales</span><strong id="localCount">0</strong></div>
+    </div>
+    <h3>Próximas fases</h3>
+    <ol class="phase-list"><li><strong>Prototipo local:</strong> formulario, persistencia local, búsqueda y exportación.</li><li><strong>Seguridad:</strong> autenticación individual, cifrado local y políticas de acceso.</li><li><strong>Sincronización:</strong> base central y cola offline con control de conflictos.</li><li><strong>Validación:</strong> diccionario de variables, pruebas, autorización institucional y piloto.</li></ol>
+    <p class="notice"><strong>Antes de usar datos reales:</strong> validar con el comité institucional correspondiente, responsable de protección de datos y protocolo aprobado. Usar folios codificados y guardar la llave de reidentificación fuera de esta app.</p>
+  </section>
+</main>
+<footer><span>INCLISIRAN · SCA / ICP</span><span>Prototipo v1.0 · no es expediente clínico</span></footer>
+<script src="app.js"></script>
+</body>
+</html>
